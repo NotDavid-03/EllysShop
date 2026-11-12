@@ -22,7 +22,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onOpenAdmin }) => {
       <div className="max-w-6xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-4">
         {/* Marca y Nombre del Negocio */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#721422] text-white flex items-center justify-center shadow-md shadow-[#721422]/20">
             <Store className="w-6 h-6" />
           </div>
           <div>
@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onOpenAdmin }) => {
           {/* Botón de Administración */}
           <button
             onClick={onOpenAdmin}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
               isAdmin
                 ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
@@ -60,10 +60,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onOpenAdmin }) => {
             )}
           </button>
 
-          {/* Botón del Carrito / Pedido */}
+          {/* Botón del Carrito / Pedido (Color Corinto) */}
           <button
             onClick={onOpenCart}
-            className="relative flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+            className="relative flex items-center gap-2.5 bg-[#721422] hover:bg-[#580f1a] active:scale-95 text-white px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium shadow-md shadow-[#721422]/20 transition-all cursor-pointer"
           >
             <div className="relative">
               <ShoppingBag className="w-5 h-5" />
@@ -74,9 +74,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onOpenAdmin }) => {
               )}
             </div>
             <div className="text-left hidden sm:block">
-              <span className="text-[11px] text-emerald-100 block leading-none">Mi Pedido</span>
+              <span className="text-[11px] text-rose-100 block leading-none">Mi Pedido</span>
               <span className="text-xs font-bold leading-tight">
-                {configuracion.moneda}{cartTotal.toFixed(2)}
+                {configuracion.moneda}{Number(cartTotal || 0).toFixed(2)}
               </span>
             </div>
           </button>

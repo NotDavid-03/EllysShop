@@ -49,8 +49,8 @@ export const ConfigManager: React.FC = () => {
         </p>
 
         {savedSuccess && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600" />
+          <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-[#721422] text-xs font-semibold flex items-center gap-2">
+            <Check className="w-4 h-4 text-[#721422]" />
             <span>Configuración guardada correctamente.</span>
           </div>
         )}
@@ -77,7 +77,7 @@ export const ConfigManager: React.FC = () => {
               <button
                 type="button"
                 onClick={handleTestWhatsApp}
-                className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                className="text-xs font-semibold text-[#721422] hover:text-[#580f1a] flex items-center gap-1 cursor-pointer"
               >
                 <PhoneCall className="w-3.5 h-3.5" />
                 <span>Probar número</span>
@@ -148,7 +148,7 @@ export const ConfigManager: React.FC = () => {
           {isDemoMode ? (
             <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px]">Modo Local / Demo</span>
           ) : (
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">Conectado en Vivo</span>
+            <span className="px-2 py-0.5 rounded-full bg-rose-100 text-[#721422] text-[10px] font-bold">Conectado en Vivo</span>
           )}
         </h4>
         <p className="leading-relaxed">

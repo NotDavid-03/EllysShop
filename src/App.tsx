@@ -8,7 +8,7 @@ import {
   PackageX,
   Shield,
 } from 'lucide-react';
-import { useCatalog } from './context/CatalogContext';
+import { useCatalog, CatalogProvider } from './context/CatalogContext';
 import type { Producto } from './types';
 import { Header } from './components/Header';
 import { ProductCard } from './components/ProductCard';
@@ -80,18 +80,18 @@ export function AppContent() {
           onOpenAdmin={() => setCurrentView('admin')}
         />
 
-        {/* Hero Banner / Presentación del Negocio */}
-        <section className="bg-linear-to-b from-emerald-700 to-emerald-900 text-white py-8 sm:py-12 px-4 shadow-inner">
+        {/* Hero Banner en Color Corinto Elegante */}
+        <section className="bg-linear-to-b from-[#721422] to-[#450a14] text-white py-8 sm:py-12 px-4 shadow-inner">
           <div className="max-w-6xl mx-auto text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-rose-100 border border-white/20 mb-3 backdrop-blur-xs">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 Catálogo en línea & Pedidos por WhatsApp
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
                 {configuracion.nombre_negocio}
               </h2>
-              <p className="mt-2 text-sm sm:text-base text-emerald-100 max-w-xl">
+              <p className="mt-2 text-sm sm:text-base text-rose-100/90 max-w-xl">
                 Elige lo que necesitas, confirma tu pedido y te atenderemos de inmediato por WhatsApp sin intermediarios ni costos extra.
               </p>
             </div>
@@ -99,7 +99,7 @@ export function AppContent() {
             <div className="flex flex-col sm:flex-row gap-2 shrink-0">
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="px-5 py-3 rounded-2xl bg-white text-emerald-900 hover:bg-emerald-50 active:scale-95 font-bold text-xs sm:text-sm shadow-lg shadow-black/10 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="px-5 py-3 rounded-2xl bg-white text-[#721422] hover:bg-rose-50 active:scale-95 font-bold text-xs sm:text-sm shadow-lg shadow-black/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Hacer un pedido</span>
                 <ChevronRight className="w-4 h-4" />
@@ -119,7 +119,7 @@ export function AppContent() {
                 placeholder="Buscar por nombre o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full text-sm pl-9 pr-4 py-2.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                className="w-full text-sm pl-9 pr-4 py-2.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#721422]/20 focus:border-[#721422] transition-all"
               />
             </div>
 
@@ -138,7 +138,7 @@ export function AppContent() {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-slate-900 text-white shadow-xs'
+                      ? 'bg-[#721422] text-white shadow-xs'
                       : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                   }`}
                 >
@@ -192,14 +192,14 @@ export function AppContent() {
         </main>
       </div>
 
-      {/* Botón flotante de WhatsApp para dudas directas */}
+      {/* Botón flotante de WhatsApp en color Corinto */}
       <a
         href={`https://wa.me/${configuracion.whatsapp_telefono.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
           '¡Hola! Tengo una duda sobre los productos del catálogo.'
         )}`}
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-5 right-5 z-20 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white p-3.5 sm:px-4 sm:py-3 rounded-full shadow-lg shadow-emerald-500/30 flex items-center gap-2 transition-all cursor-pointer"
+        className="fixed bottom-5 right-5 z-20 bg-[#721422] hover:bg-[#580f1a] active:scale-95 text-white p-3.5 sm:px-4 sm:py-3 rounded-full shadow-lg shadow-[#721422]/30 flex items-center gap-2 transition-all cursor-pointer"
         title="Contáctanos por WhatsApp"
       >
         <MessageCircle className="w-5 h-5 fill-current" />
@@ -210,7 +210,7 @@ export function AppContent() {
       <footer className="mt-12 bg-white border-t border-slate-200/80 py-8 text-center text-xs text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-slate-600 font-medium">
-            <Store className="w-4 h-4 text-emerald-600" />
+            <Store className="w-4 h-4 text-[#721422]" />
             <span>{configuracion.nombre_negocio}</span>
           </div>
 
@@ -249,8 +249,6 @@ export function AppContent() {
     </div>
   );
 }
-
-import { CatalogProvider } from './context/CatalogContext';
 
 export default function App() {
   return (

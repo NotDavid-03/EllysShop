@@ -11,10 +11,12 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) => {
   const { configuracion, addToCart, cart } = useCatalog();
 
-  const itemInCart = cart.find((item) => item.producto.id === producto.id);
+  const itemInCart = cart.find((item) => item.producto?.id === producto.id);
   const currentQuantityInCart = itemInCart ? itemInCart.cantidad : 0;
-  const isOutOfStock = producto.stock <= 0;
-  const isMaxInCart = currentQuantityInCart >= producto.stock;
+  const stock = Number(producto.stock ?? 0);
+  const isOutOfStock = stock <= 0;
+  const isMaxInCart = currentQuantityInCart >= stock;
+  const precioVenta = Number(producto.precio_venta ?? 0);
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -24,14 +26,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
   };
 
   const primaryImage =
-    producto.imagenes && producto.imagenes.length > 0
+    Array.isArray(producto.imagenes) && producto.imagenes.length > 0
       ? producto.imagenes[0]
       : 'https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=600&q=80';
 
   return (
     <div
       onClick={() => onSelect(producto)}
-      className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-lg hover:border-emerald-300 transition-all duration-200 flex flex-col cursor-pointer"
+      className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-lg hover:border-[#721422]/40 transition-all duration-200 flex flex-col cursor-pointer"
     >
       {/* Contenedor de la Imagen */}
       <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden">
@@ -45,17 +47,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
         {/* Badge de Stock / Disponibilidad */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
           {isOutOfStock ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/90 backdrop-blur-xs text-white shadow-xs">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-600/90 backdrop-blur-xs text-white shadow-xs">
               <AlertCircle className="w-3 h-3" />
               Agotado
             </span>
-          ) : producto.stock <= 3 ? (
+          ) : stock <= 3 ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/90 backdrop-blur-xs text-slate-950 shadow-xs">
-              ¡Últimas {producto.stock} {producto.unidad}(s)!
+              ¡Últimas {stock} {producto.unidad || 'pza'}(s)!
             </span>
           ) : (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-600/90 backdrop-blur-xs text-white shadow-xs">
-              {producto.stock} en stock
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#721422]/90 backdrop-blur-xs text-white shadow-xs">
+              {stock} en stock
             </span>
           )}
         </div>
@@ -70,7 +72,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
         )}
 
         {/* Indicador de múltiples fotos */}
-        {producto.imagenes && producto.imagenes.length > 1 && (
+        {Array.isArray(producto.imagenes) && producto.imagenes.length > 1 && (
           <div className="absolute bottom-2.5 right-2.5">
             <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-900/70 backdrop-blur-xs text-white flex items-center gap-1 shadow-xs">
               <Images className="w-3 h-3" />
@@ -83,7 +85,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
       {/* Contenido / Información */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-1 group-hover:text-emerald-700 transition-colors">
+          <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-1 group-hover:text-[#721422] transition-colors">
             {producto.nombre}
           </h3>
           <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -94,10 +96,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
         {/* Precio y Botón de Agregar */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <div>
-            <span className="text-xs text-slate-400 block leading-none">Precio</span>
+            <span className="text-[11px] text-slate-400 block leading-none">Precio</span>
             <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-lg font-extrabold text-slate-900">
-                {configuracion.moneda}{producto.precio_venta.toFixed(2)}
+              <span className="text-base sm:text-lg font-black text-[#721422]">
+                {configuracion.moneda}{precioVenta.toFixed(2)}
               </span>
               <span className="text-[11px] text-slate-500">
                 / {producto.unidad || 'pza'}
@@ -112,8 +114,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
               isOutOfStock
                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 : isMaxInCart
-                ? 'bg-emerald-100 text-emerald-800'
-                : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-xs'
+                ? 'bg-rose-100 text-[#721422] font-bold'
+                : 'bg-[#721422] hover:bg-[#580f1a] active:scale-95 text-white shadow-xs'
             }`}
             title={
               isOutOfStock

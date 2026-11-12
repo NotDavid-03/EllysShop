@@ -219,7 +219,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           {/* Precios y Costo */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
             <div>
-              <label className="block text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-bold text-[#721422] uppercase tracking-wider mb-1">
                 Precio de Venta * (Público)
               </label>
               <div className="relative">
@@ -233,7 +233,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   placeholder="0.00"
                   value={precioVenta}
                   onChange={(e) => setPrecioVenta(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full text-sm pl-7 pr-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full text-sm pl-7 pr-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#721422]/20 focus:border-[#721422]"
                   required
                 />
               </div>
@@ -327,7 +327,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </div>
 
               {imagenes.length >= 3 ? (
-                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold text-[#721422] bg-rose-100 px-2 py-0.5 rounded-full">
                   ✓ {imagenes.length} fotos cargadas
                 </span>
               ) : (

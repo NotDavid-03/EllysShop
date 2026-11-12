@@ -15,9 +15,9 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
   if (!codigo) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl border border-slate-100">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-rose-100 text-[#721422] flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-10 h-10" />
         </div>
 
@@ -25,7 +25,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
           ¡Pedido Registrado!
         </h3>
 
-        <div className="my-3 py-2 px-4 rounded-xl bg-slate-100 inline-block font-mono font-bold text-slate-800 text-base">
+        <div className="my-3 py-2 px-4 rounded-xl bg-slate-100 inline-block font-mono font-bold text-[#721422] text-base border border-slate-200">
           Folio: #{codigo}
         </div>
 
@@ -33,14 +33,14 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
           Tu pedido quedó registrado en el sistema. Se abrió una ventana de WhatsApp para que nos envíes los datos del pedido y confirmemos tu entrega.
         </p>
 
-        {/* Botón para volver a abrir WhatsApp si el navegador bloqueó la ventana emergente */}
+        {/* Botón para volver a abrir WhatsApp */}
         {whatsappUrl && (
           <div className="mt-5">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all"
+              className="w-full py-3 px-4 rounded-xl bg-[#721422] hover:bg-[#580f1a] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#721422]/20 transition-all cursor-pointer"
             >
               <MessageSquare className="w-4 h-4" />
               <span>Abrir chat de WhatsApp</span>

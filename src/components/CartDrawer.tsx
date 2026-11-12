@@ -56,7 +56,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       });
 
       if (result.success) {
-        // Abrir WhatsApp
         window.open(result.whatsappUrl, '_blank');
         onClose();
         onOrderSuccess(result.codigo, result.whatsappUrl);
@@ -69,7 +68,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/50 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/60 backdrop-blur-xs flex justify-end transition-opacity">
       <div
         className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between"
         onClick={(e) => e.stopPropagation()}
@@ -77,9 +76,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Cabecera del Carrito */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-emerald-600" />
+            <ShoppingBag className="w-5 h-5 text-[#721422]" />
             <h2 className="font-bold text-slate-900 text-lg">Mi Pedido</h2>
-            <span className="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-rose-100 text-[#721422] font-bold px-2 py-0.5 rounded-full">
               {cartCount} {cartCount === 1 ? 'producto' : 'productos'}
             </span>
           </div>
@@ -88,7 +87,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             {cart.length > 0 && (
               <button
                 onClick={clearCart}
-                className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded transition-colors"
+                className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded transition-colors cursor-pointer"
                 title="Vaciar carrito"
               >
                 Vaciar
@@ -96,7 +95,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             )}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
+              className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -116,7 +115,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </p>
               <button
                 onClick={onClose}
-                className="mt-5 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-medium text-xs hover:bg-emerald-700 transition-colors cursor-pointer"
+                className="mt-5 px-5 py-2.5 rounded-xl bg-[#721422] hover:bg-[#580f1a] text-white font-medium text-xs transition-colors cursor-pointer"
               >
                 Ver productos
               </button>
@@ -126,36 +125,41 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               {/* Lista de Items */}
               <div className="space-y-3">
                 {cart.map((item) => {
+                  const prod = item.producto;
+                  if (!prod) return null;
+
                   const img =
-                    item.producto.imagenes && item.producto.imagenes.length > 0
-                      ? item.producto.imagenes[0]
+                    Array.isArray(prod.imagenes) && prod.imagenes.length > 0
+                      ? prod.imagenes[0]
                       : 'https://images.unsplash.com/photo-1560343090-f0409e92791a?auto=format&fit=crop&w=150&q=80';
+
+                  const precioVenta = Number(prod.precio_venta ?? 0);
 
                   return (
                     <div
-                      key={item.producto.id}
+                      key={prod.id}
                       className="flex items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50/70"
                     >
                       <img
                         src={img}
-                        alt={item.producto.nombre}
+                        alt={prod.nombre}
                         className="w-14 h-14 rounded-xl object-cover bg-white shrink-0"
                       />
 
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate">
-                          {item.producto.nombre}
+                          {prod.nombre}
                         </h4>
                         <div className="text-xs text-slate-500 mt-0.5">
-                          {configuracion.moneda}{item.producto.precio_venta.toFixed(2)} c/u
+                          {configuracion.moneda}{precioVenta.toFixed(2)} c/u
                         </div>
 
                         {/* Controles de Cantidad */}
                         <div className="flex items-center gap-2 mt-2">
                           <div className="flex items-center border border-slate-200 rounded-lg bg-white">
                             <button
-                              onClick={() => updateCartQuantity(item.producto.id, item.cantidad - 1)}
-                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100"
+                              onClick={() => updateCartQuantity(prod.id, item.cantidad - 1)}
+                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
@@ -163,17 +167,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                               {item.cantidad}
                             </span>
                             <button
-                              onClick={() => updateCartQuantity(item.producto.id, item.cantidad + 1)}
-                              disabled={item.cantidad >= item.producto.stock}
-                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+                              onClick={() => updateCartQuantity(prod.id, item.cantidad + 1)}
+                              disabled={item.cantidad >= Number(prod.stock ?? 0)}
+                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
                           </div>
 
                           <button
-                            onClick={() => removeFromCart(item.producto.id)}
-                            className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
+                            onClick={() => removeFromCart(prod.id)}
+                            className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                             title="Quitar"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -182,9 +186,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       </div>
 
                       <div className="text-right">
-                        <span className="font-black text-slate-900 text-sm">
+                        <span className="font-black text-[#721422] text-sm">
                           {configuracion.moneda}
-                          {(item.producto.precio_venta * item.cantidad).toFixed(2)}
+                          {(precioVenta * item.cantidad).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -214,7 +218,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       placeholder="Ej. Juan Pérez"
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
-                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#721422]/20 focus:border-[#721422]"
                       required
                     />
                   </div>
@@ -225,10 +229,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     </label>
                     <input
                       type="tel"
-                      placeholder="Ej. 55 1234 5678"
+                      placeholder="Ej. 4249 0720"
                       value={telefono}
                       onChange={(e) => setTelefono(e.target.value)}
-                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#721422]/20 focus:border-[#721422]"
                       required
                     />
                   </div>
@@ -239,10 +243,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="Calle, número, colonia o 'Paso a recoger'"
+                      placeholder="Dirección, zona o 'Paso a recoger'"
                       value={direccion}
                       onChange={(e) => setDireccion(e.target.value)}
-                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#721422]/20 focus:border-[#721422]"
                     />
                   </div>
 
@@ -251,11 +255,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       Notas especiales (Opcional)
                     </label>
                     <textarea
-                      placeholder="Ej. Entregar después de las 4pm, referencia de casa..."
+                      placeholder="Ej. Entregar después de las 3pm, referencia de lugar..."
                       value={notas}
                       onChange={(e) => setNotas(e.target.value)}
                       rows={2}
-                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                      className="w-full text-xs sm:text-sm px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#721422]/20 focus:border-[#721422] resize-none"
                     />
                   </div>
                 </div>
@@ -268,16 +272,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         {cart.length > 0 && (
           <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 space-y-3">
             <div className="flex items-center justify-between text-slate-600 text-xs sm:text-sm">
-              <span>Subtotal estimado:</span>
-              <span className="font-bold text-slate-900 text-base">
-                {configuracion.moneda}{cartTotal.toFixed(2)}
+              <span>Total del pedido:</span>
+              <span className="font-black text-[#721422] text-lg">
+                {configuracion.moneda}{Number(cartTotal || 0).toFixed(2)}
               </span>
             </div>
 
             <button
               onClick={handleSubmitOrder}
               disabled={isSubmitting}
-              className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 px-4 rounded-2xl bg-[#721422] hover:bg-[#580f1a] active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#721422]/25 transition-all cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span>Registrando pedido...</span>
@@ -291,7 +295,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </button>
 
             <p className="text-[11px] text-center text-slate-400">
-              🔒 Tu pedido se guarda en la base de datos y se abre WhatsApp para coordinar el pago y entrega.
+              🔒 Tu pedido se guarda automáticamente y se abre WhatsApp para coordinar el pago y entrega.
             </p>
           </div>
         )}

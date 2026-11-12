@@ -213,10 +213,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToCatalog 
               <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
                 <div className="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase">
                   <span>Margen Potencial</span>
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <TrendingUp className="w-4 h-4 text-[#721422]" />
                 </div>
                 <div className="mt-2">
-                  <span className="text-2xl font-black text-emerald-600">
+                  <span className="text-2xl font-black text-[#721422]">
                     +{configuracion.moneda}{margenEstimadoTotal.toFixed(2)}
                   </span>
                 </div>
@@ -256,7 +256,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToCatalog 
                       <th className="py-3 px-4">Stock</th>
                       <th className="py-3 px-4">Precio Venta</th>
                       <th className="py-3 px-4 text-purple-700">🔒 Costo (Admin)</th>
-                      <th className="py-3 px-4 text-emerald-700">Margen Unit.</th>
+                      <th className="py-3 px-4 text-[#721422]">Margen Unit.</th>
                       <th className="py-3 px-4">Estado</th>
                       <th className="py-3 px-4 text-right">Acciones</th>
                     </tr>
@@ -312,7 +312,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToCatalog 
                                   {prod.stock} disponibles
                                 </span>
                               ) : (
-                                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-[#721422]">
                                   {prod.stock} disponibles
                                 </span>
                               )}
@@ -326,13 +326,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToCatalog 
                               {configuracion.moneda}{(prod.costo || 0).toFixed(2)}
                             </td>
 
-                            <td className="py-3 px-4 font-bold text-emerald-700">
+                            <td className="py-3 px-4 font-bold text-[#721422]">
                               +{configuracion.moneda}{margin.toFixed(2)}
                             </td>
 
                             <td className="py-3 px-4">
                               {prod.activo !== false ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
+                                <span className="inline-flex items-center gap-1 text-[11px] text-[#721422] font-semibold">
                                   <Eye className="w-3.5 h-3.5" /> Visible
                                 </span>
                               ) : (

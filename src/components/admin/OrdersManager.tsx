@@ -44,7 +44,7 @@ export const OrdersManager: React.FC = () => {
         );
       case 'entregado':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-[#721422]">
             <CheckCircle className="w-3.5 h-3.5" /> Entregado
           </span>
         );
@@ -185,7 +185,7 @@ export const OrdersManager: React.FC = () => {
                     <span>{pedido.cliente_telefono}</span>
                     <button
                       onClick={() => handleOpenClientWhatsApp(pedido)}
-                      className="ml-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md"
+                      className="ml-1 inline-flex items-center gap-1 text-[11px] font-bold text-[#721422] hover:text-[#580f1a] bg-rose-50 px-2 py-0.5 rounded-md cursor-pointer"
                       title="Abrir chat en WhatsApp"
                     >
                       <MessageSquare className="w-3 h-3" />
@@ -234,8 +234,8 @@ export const OrdersManager: React.FC = () => {
 
                   <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-700">Total a cobrar:</span>
-                    <span className="text-base font-black text-emerald-700">
-                      {configuracion.moneda}{pedido.total.toFixed(2)}
+                    <span className="text-base font-black text-[#721422]">
+                      {configuracion.moneda}{Number(pedido.total || 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
