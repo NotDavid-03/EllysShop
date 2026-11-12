@@ -158,7 +158,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        setProductos(data);
+        if (data.length > 0) {
+          setProductos(data);
+        } else {
+          setProductos(initialProducts);
+        }
       }
     } catch (e) {
       console.warn('Error al cargar productos:', e);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Check, AlertCircle } from 'lucide-react';
+import { Plus, Check, AlertCircle, Images } from 'lucide-react';
 import type { Producto } from '../types';
 import { useCatalog } from '../context/CatalogContext';
 
@@ -65,6 +65,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
           <div className="absolute top-2.5 right-2.5">
             <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-900/60 backdrop-blur-xs text-slate-100">
               {producto.categoria}
+            </span>
+          </div>
+        )}
+
+        {/* Indicador de múltiples fotos */}
+        {producto.imagenes && producto.imagenes.length > 1 && (
+          <div className="absolute bottom-2.5 right-2.5">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-900/70 backdrop-blur-xs text-white flex items-center gap-1 shadow-xs">
+              <Images className="w-3 h-3" />
+              {producto.imagenes.length} fotos
             </span>
           </div>
         )}
