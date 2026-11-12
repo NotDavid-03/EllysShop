@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Store, ShieldCheck, Lock } from 'lucide-react';
+import { ShoppingBag, ShieldCheck, Lock } from 'lucide-react';
 import { useCatalog } from '../context/CatalogContext';
 
 interface HeaderProps {
@@ -20,10 +20,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCart, onOpenAdmin }) => {
       )}
 
       <div className="max-w-6xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-4">
-        {/* Marca y Nombre del Negocio */}
+        {/* Marca y Nombre del Negocio con el Logo Oficial */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#721422] text-white flex items-center justify-center shadow-md shadow-[#721422]/20">
-            <Store className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-md ring-2 ring-rose-200/80 bg-white shrink-0">
+            <img
+              src="/logo.jpg"
+              alt="Logo Elly's"
+              className="w-full h-full object-cover scale-105"
+            />
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight">

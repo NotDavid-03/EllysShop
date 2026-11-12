@@ -3,7 +3,6 @@ import {
   Search,
   MessageCircle,
   Sparkles,
-  Store,
   ChevronRight,
   PackageX,
   Shield,
@@ -80,20 +79,31 @@ export function AppContent() {
           onOpenAdmin={() => setCurrentView('admin')}
         />
 
-        {/* Hero Banner en Color Corinto Elegante */}
+        {/* Hero Banner en Color Corinto Elegante con Logo */}
         <section className="bg-linear-to-b from-[#721422] to-[#450a14] text-white py-8 sm:py-12 px-4 shadow-inner">
-          <div className="max-w-6xl mx-auto text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-rose-100 border border-white/20 mb-3 backdrop-blur-xs">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                Catálogo en línea & Pedidos por WhatsApp
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-                {configuracion.nombre_negocio}
-              </h2>
-              <p className="mt-2 text-sm sm:text-base text-rose-100/90 max-w-xl">
-                Elige lo que necesitas, confirma tu pedido y te atenderemos de inmediato por WhatsApp sin intermediarios ni costos extra.
-              </p>
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+              {/* Medallón elegante del Logo */}
+              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-white/20 bg-white shrink-0 group hover:scale-105 transition-transform duration-300">
+                <img
+                  src="/logo.jpg"
+                  alt="Elly's Maquillaje"
+                  className="w-full h-full object-cover scale-105"
+                />
+              </div>
+
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-rose-100 border border-white/20 mb-2.5 backdrop-blur-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  Catálogo Oficial & Pedidos por WhatsApp
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                  {configuracion.nombre_negocio}
+                </h2>
+                <p className="mt-2 text-xs sm:text-sm text-rose-100/90 max-w-xl">
+                  Elige tus productos favoritos de maquillaje y cuidado personal, confirma tu pedido y te atenderemos de inmediato por WhatsApp.
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 shrink-0">
@@ -209,8 +219,12 @@ export function AppContent() {
       {/* Pie de Página */}
       <footer className="mt-12 bg-white border-t border-slate-200/80 py-8 text-center text-xs text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-slate-600 font-medium">
-            <Store className="w-4 h-4 text-[#721422]" />
+          <div className="flex items-center gap-2.5 text-slate-700 font-semibold">
+            <img
+              src="/logo.jpg"
+              alt="Logo Elly's"
+              className="w-6 h-6 rounded-full object-cover ring-1 ring-rose-300"
+            />
             <span>{configuracion.nombre_negocio}</span>
           </div>
 
