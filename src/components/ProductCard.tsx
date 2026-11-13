@@ -36,10 +36,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ producto, onSelect }) 
       className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-lg hover:border-[#721422]/40 transition-all duration-200 flex flex-col cursor-pointer"
     >
       {/* Contenedor de la Imagen */}
-      <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden">
+      <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden select-none">
         <img
           src={primaryImage}
           alt={producto.nombre}
+          onDragStart={(e) => e.preventDefault()}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />

@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { X, Trash2, Plus, Minus, Send, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCatalog } from '../context/CatalogContext';
+import type { LegalTab } from './LegalModal';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onOrderSuccess: (codigo: string, whatsappUrl: string) => void;
+  onOpenLegal?: (tab: LegalTab) => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
   onClose,
   onOrderSuccess,
+  onOpenLegal,
 }) => {
   const {
     cart,
@@ -276,6 +279,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <span className="font-black text-[#721422] text-lg">
                 {configuracion.moneda}{Number(cartTotal || 0).toFixed(2)}
               </span>
+            </div>
+
+            {/* Aviso legal discreto de bioseguridad y compra */}
+            <div className="p-2.5 rounded-xl bg-slate-200/60 text-[11px] text-slate-600 leading-snug">
+              <span>Al enviar tu pedido aceptas nuestros </span>
+              <button
+                type="button"
+                onClick={() => onOpenLegal?.('terminos')}
+                className="text-[#721422] font-bold underline hover:text-[#580f1a] cursor-pointer"
+              >
+                Términos
+              </button>
+              <span> y </span>
+              <button
+                type="button"
+                onClick={() => onOpenLegal?.('salud')}
+                className="text-[#721422] font-bold underline hover:text-[#580f1a] cursor-pointer"
+              >
+                Aviso Dermatológico
+              </button>
+              <span>. Por bioseguridad sanitaria, cosméticos abiertos no aplican para devolución.</span>
             </div>
 
             <button

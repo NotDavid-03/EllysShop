@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Minus, ShoppingBag, AlertCircle } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, AlertCircle, Sparkles } from 'lucide-react';
 import type { Producto } from '../types';
+import type { LegalTab } from './LegalModal';
 import { useCatalog } from '../context/CatalogContext';
 
 interface ProductModalProps {
   producto: Producto | null;
   onClose: () => void;
   onOpenCart: () => void;
+  onOpenLegal?: (tab: LegalTab) => void;
 }
 
-export const ProductModal: React.FC<ProductModalProps> = ({ producto, onClose, onOpenCart }) => {
+export const ProductModal: React.FC<ProductModalProps> = ({ 
+  producto, 
+  onClose, 
+  onOpenCart,
+  onOpenLegal 
+}) => {
   const { configuracion, addToCart, cart } = useCatalog();
   
   // Todos los Hooks SIEMPRE al inicio (sin retornos condicionales antes)
@@ -73,12 +80,17 @@ export const ProductModal: React.FC<ProductModalProps> = ({ producto, onClose, o
 
         {/* Galería de Fotos */}
         <div className="md:w-1/2 bg-slate-100 p-4 sm:p-5 flex flex-col justify-between">
-          <div className="aspect-square w-full rounded-2xl overflow-hidden bg-white shadow-xs border border-slate-200/60">
+          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white shadow-xs border border-slate-200/60 select-none">
             <img
               src={images[selectedImgIndex] || images[0]}
               alt={producto.nombre}
+              onDragStart={(e) => e.preventDefault()}
               className="w-full h-full object-cover"
             />
+            {/* Aviso discreto de propiedad de imagen */}
+            <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-slate-900/50 backdrop-blur-xs text-[10px] text-white/90 font-medium tracking-wide pointer-events-none">
+              © Elly's Maquillaje
+            </span>
           </div>
 
           {/* Miniaturas si hay más de 1 imagen */}
@@ -94,7 +106,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({ producto, onClose, o
                       : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img 
+                    src={img} 
+                    alt="" 
+                    onDragStart={(e) => e.preventDefault()}
+                    className="w-full h-full object-cover" 
+                  />
                 </button>
               ))}
             </div>
@@ -139,6 +156,24 @@ export const ProductModal: React.FC<ProductModalProps> = ({ producto, onClose, o
               <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed whitespace-pre-line">
                 {producto.descripcion || 'Este producto no cuenta con una descripción detallada por el momento.'}
               </p>
+
+              {/* Descargo discreto dermatológico */}
+              <div className="mt-3.5 p-3 rounded-2xl bg-amber-50/70 border border-amber-200/70 text-[11px] text-amber-900 flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-[#721422] shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-bold block text-slate-900">Cosmético de uso externo</span>
+                  <span>No somos dermatólogos. Realiza una prueba de sensibilidad previa. </span>
+                  {onOpenLegal && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenLegal('salud')}
+                      className="text-[#721422] font-bold underline hover:text-[#580f1a] cursor-pointer inline ml-0.5"
+                    >
+                      Aviso legal
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 

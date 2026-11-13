@@ -6,6 +6,9 @@ import {
   ChevronRight,
   PackageX,
   Shield,
+  ShieldAlert,
+  Camera,
+  FileText,
 } from 'lucide-react';
 import { useCatalog, CatalogProvider } from './context/CatalogContext';
 import type { Producto } from './types';
@@ -16,6 +19,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { OrderSuccessModal } from './components/OrderSuccessModal';
 import { AdminLogin } from './components/admin/AdminLogin';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { LegalModal, type LegalTab } from './components/LegalModal';
 
 export function AppContent() {
   const { productos, configuracion, isAdmin, isLoading } = useCatalog();
@@ -31,6 +35,19 @@ export function AppContent() {
     codigo: string;
     whatsappUrl: string;
   } | null>(null);
+
+  // Modal Legal (Avisos de salud, copyright, términos)
+  const [legalModalState, setLegalModalState] = useState<{
+    isOpen: boolean;
+    tab: LegalTab;
+  }>({
+    isOpen: false,
+    tab: 'salud',
+  });
+
+  const handleOpenLegal = (tab: LegalTab = 'salud') => {
+    setLegalModalState({ isOpen: true, tab });
+  };
 
   // Lista de categorías únicas extraídas de los productos
   const categories = useMemo(() => {
@@ -216,29 +233,76 @@ export function AppContent() {
         <span className="text-xs font-bold hidden sm:inline">¿Dudas? Escríbenos</span>
       </a>
 
-      {/* Pie de Página */}
-      <footer className="mt-12 bg-white border-t border-slate-200/80 py-8 text-center text-xs text-slate-400">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5 text-slate-700 font-semibold">
-            <img
-              src="/logo.jpg"
-              alt="Logo Elly's"
-              className="w-6 h-6 rounded-full object-cover ring-1 ring-rose-300"
-            />
-            <span>{configuracion.nombre_negocio}</span>
+      {/* Pie de Página Elegante y Blindado Legalmente */}
+      <footer className="mt-16 bg-white border-t border-slate-200/80 pt-10 pb-8 text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-100">
+            {/* Identidad */}
+            <div className="flex items-center gap-3">
+              <img
+                src="/logo.jpg"
+                alt="Logo Elly's"
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-rose-300/60 shadow-xs"
+              />
+              <div className="text-left">
+                <span className="font-bold text-slate-900 text-sm block">
+                  {configuracion.nombre_negocio}
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Catálogo digital exclusivo de cosméticos y maquillaje
+                </span>
+              </div>
+            </div>
+
+            {/* Enlaces Legales Discretos y Accesibles */}
+            <div className="flex flex-wrap items-center justify-center gap-y-2.5 gap-x-6 text-xs text-slate-600">
+              <button
+                type="button"
+                onClick={() => handleOpenLegal('salud')}
+                className="flex items-center gap-1.5 hover:text-[#721422] transition-colors cursor-pointer"
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-[#721422]" />
+                <span>Aviso Dermatológico</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleOpenLegal('copyright')}
+                className="flex items-center gap-1.5 hover:text-[#721422] transition-colors cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5 text-[#721422]" />
+                <span>Propiedad de Imágenes</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleOpenLegal('terminos')}
+                className="flex items-center gap-1.5 hover:text-[#721422] transition-colors cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5 text-[#721422]" />
+                <span>Términos y Devoluciones</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCurrentView('admin')}
+                className="flex items-center gap-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer ml-1"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>Administración</span>
+              </button>
+            </div>
           </div>
 
-          <p className="text-[11px] text-slate-400">
-            Catálogo digital de productos • Envíos y pedidos vía WhatsApp
-          </p>
-
-          <button
-            onClick={() => setCurrentView('admin')}
-            className="text-[11px] text-slate-400 hover:text-slate-700 flex items-center gap-1 transition-colors cursor-pointer"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Acceso Administración</span>
-          </button>
+          {/* Barra de Copyright y Protección de Contenido */}
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 text-center sm:text-left">
+            <p>
+              © {new Date().getFullYear()} {configuracion.nombre_negocio}. Todos los derechos reservados.
+            </p>
+            <p className="max-w-md sm:text-right">
+              Todas las fotografías y material visual expuesto pertenecen a {configuracion.nombre_negocio}. Prohibida su copia o uso comercial no autorizado.
+            </p>
+          </div>
         </div>
       </footer>
 
@@ -247,18 +311,27 @@ export function AppContent() {
         producto={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onOpenCart={() => setIsCartOpen(true)}
+        onOpenLegal={handleOpenLegal}
       />
 
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         onOrderSuccess={handleOrderSuccess}
+        onOpenLegal={handleOpenLegal}
       />
 
       <OrderSuccessModal
         codigo={successOrderData?.codigo || null}
         whatsappUrl={successOrderData?.whatsappUrl || null}
         onClose={() => setSuccessOrderData(null)}
+      />
+
+      <LegalModal
+        isOpen={legalModalState.isOpen}
+        onClose={() => setLegalModalState((prev) => ({ ...prev, isOpen: false }))}
+        initialTab={legalModalState.tab}
+        nombreNegocio={configuracion.nombre_negocio}
       />
     </div>
   );
