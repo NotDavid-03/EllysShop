@@ -66,14 +66,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    return localStorage.getItem('is_admin_session') === 'true';
-  });
+  // SEGURIDAD: Nunca confiar ciegamente en localStorage para el rol de Admin.
+  // Inicia en false y solo se confirma si Supabase valida un token criptográfico JWT real.
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const isDemoMode = !isSupabaseConfigured;
 
-  // Persistir en LocalStorage para modo offline/demo
+  // Persistir en LocalStorage solo si no hay Supabase configurado (modo demo)
   useEffect(() => {
     if (isDemoMode) {
       localStorage.setItem('local_productos', JSON.stringify(productos));
@@ -86,21 +86,19 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.setItem('local_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales y verificar sesión de forma criptográfica
   useEffect(() => {
     const initData = async () => {
       setIsLoading(true);
       if (isSupabaseConfigured) {
-        // Verificar sesión activa en Supabase
+        // Verificar sesión criptográfica JWT en Supabase
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setIsAdmin(true);
-          localStorage.setItem('is_admin_session', 'true');
-        }
+        const isValidAdmin = Boolean(session?.user);
+        setIsAdmin(isValidAdmin);
 
         await fetchConfiguracion();
-        await fetchProductos();
-        if (session) {
+        await fetchProductos(isValidAdmin);
+        if (isValidAdmin) {
           await fetchPedidos();
         }
       }
@@ -112,12 +110,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Listener de cambios de autenticación en Supabase
     if (isSupabaseConfigured) {
       const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        const logged = Boolean(session);
+        const logged = Boolean(session?.user);
         setIsAdmin(logged);
-        localStorage.setItem('is_admin_session', logged ? 'true' : 'false');
         if (logged) {
-          fetchProductos();
+          fetchProductos(true);
           fetchPedidos();
+        } else {
+          fetchProductos(false);
+          setPedidos([]);
         }
       });
 
@@ -148,10 +148,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const fetchProductos = async () => {
+  // SEGURIDAD:
+  // Si es admin autenticado -> Consulta la tabla 'productos' (con costos).
+  // Si es cliente anónimo -> Consulta EXCLUSIVAMENTE la vista 'productos_publicos' (donde costo NO existe).
+  const fetchProductos = async (adminOverride?: boolean) => {
     if (!isSupabaseConfigured) return;
+    const adminActive = typeof adminOverride === 'boolean' ? adminOverride : isAdmin;
     try {
-      const tableName = isAdmin ? 'productos' : 'productos_publicos';
+      const tableName = adminActive ? 'productos' : 'productos_publicos';
       const { data, error } = await supabase
         .from(tableName)
         .select('*')
@@ -191,11 +195,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Carrito
   const addToCart = (producto: Producto, cantidad = 1) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.producto.id === producto.id);
+      const existing = prev.find((item) => item.producto?.id === producto.id);
       if (existing) {
         const newQuantity = Math.min(producto.stock, existing.cantidad + cantidad);
         return prev.map((item) =>
-          item.producto.id === producto.id ? { ...item, cantidad: newQuantity } : item
+          item.producto?.id === producto.id ? { ...item, cantidad: newQuantity } : item
         );
       } else {
         const initialQty = Math.min(producto.stock, Math.max(1, cantidad));
@@ -211,7 +215,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     setCart((prev) =>
       prev.map((item) => {
-        if (item.producto.id === productoId) {
+        if (item.producto?.id === productoId) {
           const maxStock = item.producto.stock;
           return { ...item, cantidad: Math.min(maxStock, cantidad) };
         }
@@ -221,7 +225,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const removeFromCart = (productoId: string) => {
-    setCart((prev) => prev.filter((item) => item.producto.id !== productoId));
+    setCart((prev) => prev.filter((item) => item.producto?.id !== productoId));
   };
 
   const clearCart = () => {
@@ -229,75 +233,106 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const cartTotal = cart.reduce(
-    (sum, item) => sum + item.producto.precio_venta * item.cantidad,
+    (sum, item) => sum + (Number(item.producto?.precio_venta) || 0) * item.cantidad,
     0
   );
 
   const cartCount = cart.reduce((sum, item) => sum + item.cantidad, 0);
 
-  // Crear Pedido y Generar Enlace de WhatsApp
+  // ========================================================
+  // PROTOCOLO DE PEDIDO SEGURO (ANTI-ALTERACIÓN DE PRECIOS)
+  // ========================================================
   const createOrder = async (cliente: CustomerFormData) => {
-    const codigo = `PED-${Math.floor(1000 + Math.random() * 9000)}`;
-    const nuevoPedido: Pedido = {
-      id: isSupabaseConfigured ? '' : `ped-${Date.now()}`,
-      codigo,
-      cliente_nombre: cliente.nombre,
-      cliente_telefono: cliente.telefono,
-      cliente_direccion: cliente.direccion,
-      notas: cliente.notas,
-      total: cartTotal,
-      estado: 'pendiente',
-      created_at: new Date().toISOString(),
-      detalles: cart.map((item) => ({
-        producto_id: item.producto.id,
-        producto_nombre: item.producto.nombre,
-        cantidad: item.cantidad,
-        precio_unitario: item.producto.precio_venta,
-        subtotal: item.producto.precio_venta * item.cantidad,
-      })),
-    };
+    // 1. Sanitización de entradas del cliente (Anti-XSS e Inyecciones)
+    const cleanNombre = cliente.nombre.trim().slice(0, 100);
+    const cleanTelefono = cliente.telefono.trim().replace(/[^0-9+]/g, '').slice(0, 25);
+    const cleanDireccion = cliente.direccion.trim().slice(0, 200);
+    const cleanNotas = cliente.notas.trim().slice(0, 300);
+
+    if (!cleanNombre || cleanTelefono.length < 8) {
+      throw new Error('Por favor ingresa un nombre y un teléfono de contacto válidos.');
+    }
+
+    if (cart.length === 0) {
+      throw new Error('El pedido está vacío.');
+    }
+
+    let codigo = `PED-${Math.floor(1000 + Math.random() * 9000)}`;
+    let finalTotal = cartTotal;
+    let itemsResumen = cart.map((i) => ({
+      nombre: i.producto.nombre,
+      cantidad: i.cantidad,
+      precio: Number(i.producto.precio_venta),
+      subtotal: Number(i.producto.precio_venta) * i.cantidad,
+    }));
 
     if (isSupabaseConfigured) {
       try {
-        const { data: pedidoData, error: pedidoError } = await supabase
-          .from('pedidos')
-          .insert({
-            codigo,
-            cliente_nombre: cliente.nombre,
-            cliente_telefono: cliente.telefono,
-            cliente_direccion: cliente.direccion,
-            notas: cliente.notas,
-            total: cartTotal,
-            estado: 'pendiente',
-          })
-          .select()
-          .single();
-
-        if (pedidoError) throw pedidoError;
-
-        const detallesToInsert = cart.map((item) => ({
-          pedido_id: pedidoData.id,
+        // SEGURIDAD CRÍTICA:
+        // Solo enviamos los IDs y las cantidades solicitadas.
+        // La base de datos consulta los precios oficiales y calcula el total de forma atómica.
+        const itemsPayload = cart.map((item) => ({
           producto_id: item.producto.id,
-          producto_nombre: item.producto.nombre,
           cantidad: item.cantidad,
-          precio_unitario: item.producto.precio_venta,
-          subtotal: item.producto.precio_venta * item.cantidad,
         }));
 
-        const { error: detallesError } = await supabase
-          .from('pedido_detalles')
-          .insert(detallesToInsert);
+        const { data: rpcResult, error: rpcError } = await supabase.rpc(
+          'crear_pedido_seguro',
+          {
+            p_cliente_nombre: cleanNombre,
+            p_cliente_telefono: cleanTelefono,
+            p_cliente_direccion: cleanDireccion,
+            p_notas: cleanNotas,
+            p_items: itemsPayload,
+          }
+        );
 
-        if (detallesError) console.error('Error al guardar detalles de pedido:', detallesError);
+        if (rpcError) {
+          console.error('Error en crear_pedido_seguro:', rpcError);
+          throw new Error(rpcError.message || 'Error al validar el pedido con el servidor.');
+        }
+
+        if (rpcResult && rpcResult.success) {
+          codigo = rpcResult.codigo;
+          finalTotal = Number(rpcResult.total);
+          if (Array.isArray(rpcResult.items)) {
+            itemsResumen = rpcResult.items.map((it: any) => ({
+              nombre: it.nombre,
+              cantidad: it.cantidad,
+              precio: Number(it.precio_unitario),
+              subtotal: Number(it.subtotal),
+            }));
+          }
+        }
 
         if (isAdmin) {
           fetchPedidos();
         }
         fetchProductos();
-      } catch (err) {
-        console.error('Error registrando pedido en Supabase:', err);
+      } catch (err: any) {
+        console.error('Fallo de validación de pedido:', err);
+        throw err;
       }
     } else {
+      // Modo local / demo
+      const nuevoPedido: Pedido = {
+        id: `ped-${Date.now()}`,
+        codigo,
+        cliente_nombre: cleanNombre,
+        cliente_telefono: cleanTelefono,
+        cliente_direccion: cleanDireccion,
+        notas: cleanNotas,
+        total: cartTotal,
+        estado: 'pendiente',
+        created_at: new Date().toISOString(),
+        detalles: cart.map((item) => ({
+          producto_id: item.producto.id,
+          producto_nombre: item.producto.nombre,
+          cantidad: item.cantidad,
+          precio_unitario: item.producto.precio_venta,
+          subtotal: item.producto.precio_venta * item.cantidad,
+        })),
+      };
       setPedidos((prev) => [nuevoPedido, ...prev]);
       setProductos((prev) =>
         prev.map((p) => {
@@ -310,10 +345,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
 
-    const itemsText = cart
+    // 2. Construir plantilla oficial formateada para WhatsApp con los valores verificados
+    const itemsText = itemsResumen
       .map(
         (i) =>
-          `• ${i.cantidad}x ${i.producto.nombre} (${configuracion.moneda}${i.producto.precio_venta} c/u) = ${configuracion.moneda}${i.cantidad * i.producto.precio_venta}`
+          `• ${i.cantidad}x ${i.nombre} (${configuracion.moneda}${i.precio.toFixed(2)} c/u) = ${configuracion.moneda}${i.subtotal.toFixed(2)}`
       )
       .join('\n');
 
@@ -323,17 +359,17 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 ${configuracion.mensaje_bienvenida}
 
 📋 *Folio del Pedido:* #${codigo}
-👤 *Cliente:* ${cliente.nombre}
-📞 *Teléfono:* ${cliente.telefono}
-${cliente.direccion ? `📍 *Dirección de entrega:* ${cliente.direccion}` : ''}
-${cliente.notas ? `📝 *Notas:* ${cliente.notas}` : ''}
+👤 *Cliente:* ${cleanNombre}
+📞 *Teléfono:* ${cleanTelefono}
+${cleanDireccion ? `📍 *Dirección de entrega:* ${cleanDireccion}` : ''}
+${cleanNotas ? `📝 *Notas:* ${cleanNotas}` : ''}
 
 🛒 *PRODUCTOS SOLICITADOS:*
 ${itemsText}
 
-💰 *TOTAL A PAGAR: ${configuracion.moneda}${cartTotal.toFixed(2)}*
+💰 *TOTAL A PAGAR: ${configuracion.moneda}${finalTotal.toFixed(2)}*
 
-_Pedido registrado automáticamente desde el catálogo web._`;
+_Pedido registrado y verificado automáticamente desde el catálogo web._`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
@@ -343,32 +379,33 @@ _Pedido registrado automáticamente desde el catálogo web._`;
     return { success: true, codigo, whatsappUrl };
   };
 
+  // Login de Administrador
   const loginAdmin = async (identifier: string, pass?: string) => {
+    // Si no está configurado Supabase, modo demo
     if (!isSupabaseConfigured) {
       if (identifier === 'admin123' || pass === 'admin123') {
         setIsAdmin(true);
-        localStorage.setItem('is_admin_session', 'true');
         return { success: true };
       }
       return { success: false, error: 'Contraseña demo incorrecta. Usa: admin123' };
     }
 
+    // En Supabase: Requiere email y contraseña válidos con token JWT firmado
     try {
       const email = identifier.includes('@') ? identifier : `${identifier}@catalogo.local`;
       const password = pass || identifier;
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        return { success: false, error: error.message };
+      if (error || !data.session) {
+        return { success: false, error: error?.message || 'Credenciales inválidas.' };
       }
 
       setIsAdmin(true);
-      localStorage.setItem('is_admin_session', 'true');
-      await fetchProductos();
+      await fetchProductos(true);
       await fetchPedidos();
       return { success: true };
     } catch (e: any) {
@@ -381,10 +418,10 @@ _Pedido registrado automáticamente desde el catálogo web._`;
       await supabase.auth.signOut();
     }
     setIsAdmin(false);
-    localStorage.removeItem('is_admin_session');
-    fetchProductos();
+    fetchProductos(false);
   };
 
+  // Operaciones de Admin sobre Productos
   const addProduct = async (prod: Omit<Producto, 'id'>) => {
     if (isSupabaseConfigured) {
       const { data, error } = await supabase
@@ -455,7 +492,23 @@ _Pedido registrado automáticamente desde el catálogo web._`;
     }
   };
 
+  // ========================================================
+  // SUBIDA SEGURA DE IMÁGENES (VALIDACIÓN ESTRICTA)
+  // ========================================================
   const uploadImage = async (file: File): Promise<string | null> => {
+    // 1. Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      console.error('Archivo rechazado: supera 5MB');
+      return null;
+    }
+
+    // 2. Validar tipo MIME
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      console.error('Archivo rechazado: tipo no permitido', file.type);
+      return null;
+    }
+
     if (!isSupabaseConfigured) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -465,8 +518,9 @@ _Pedido registrado automáticamente desde el catálogo web._`;
     }
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const cleanExt = ['jpg', 'jpeg', 'png', 'webp'].includes(fileExt) ? fileExt : 'jpg';
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${cleanExt}`;
       const filePath = `items/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -484,7 +538,7 @@ _Pedido registrado automáticamente desde el catálogo web._`;
 
       return data.publicUrl;
     } catch (err) {
-      console.error('Error al subir imagen:', err);
+      console.error('Error al subir imagen de forma segura:', err);
       return null;
     }
   };
